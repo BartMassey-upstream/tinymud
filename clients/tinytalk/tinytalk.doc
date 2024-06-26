@@ -1,0 +1,475 @@
+			   TinyTalk, V1.1.1
+			      Anton Rang
+			   ================
+
+What is TinyTalk?
+-----------------
+
+  TinyTalk is an interface to the TinyMUD system.  It replaces telnet,
+and adds many new features.  Its features include:
+
+  * TinyTalk can wrap words at the end of a line.
+
+  * TinyTalk can automatically log into your characters.
+
+  * TinyTalk can record a TinyMUD session to a file.
+
+  * TinyTalk keeps your typing and TinyMUD output from being
+    intermingled.
+
+  * TinyTalk allows input lines to be up to 512 characters long.
+    This allows long descriptions to be entered.
+
+  * TinyTalk supports simple macros.
+
+  * TinyTalk supports "portals", special exits which connect between
+    the various TinyMUD systems.  There are also commands which allow
+    manually switching systems.
+
+  * TinyTalk can hilite pages and whispers, on terminals which support
+    boldface or inverse characters.
+
+Who wrote TinyTalk?  What is its status?
+----------------------------------------
+
+  TinyTalk was written entirely by myself.  I can be reached via
+E-mail, at "rang@cs.wisc.edu".  TinyTalk is semi-supported; bugs will
+be fixed, and new features may be incorporated into future versions.
+Mail any comments or questions to me.
+
+  Stewart Clamen (aka "Stewy") came up with the idea for portals, and
+added support for them into the GNU Emacs-based client (tinymud.el).
+The first free-standing program that I know of which implemented them
+was written by Russ Smith (aka "Nightfall").  They may be reached at
+the addresses "clamen@cs.cmu.edu" and "russ@uokmax.ecn.uoknor.edu".
+
+  Support for HP-UX was contributed by Andy Norman; support for System
+V was contributed by Kipp Hickman.  If you have problems with these,
+let me know; I may have erred in integrating them into the main
+version.
+
+  Thanks also go to my many beta testers, too numerous to name here.
+They've been most helpful in finding bugs and suggesting new and
+useful features.  Thanks to all who have suggested new features as
+well.
+
+  TinyTalk is in the public domain.  Feel free to make improvements,
+or take parts of the code for your own programs.  I ask only two
+things (these aren't legal obligations, just requests):
+
+    * If you make changes to TinyTalk, change the version number.
+      Don't increment it (i.e. to 1.2 or 2.0); add something to the
+      end of the current version number.  For instance, you could
+      use your initials: TinyTalk 1.1/abr-1.  This way, no two
+      versions of TinyTalk are likely to have the same version number.
+
+    * If you distribute modified versions of TinyTalk, please leave a
+      pointer to derby.cs.wisc.edu (128.105.2.162) where the original
+      code may be FTPed from.
+
+  If you have a minor improvement in mind, it may be best just to send
+me a mail message.  I can incorporate it into the next version.
+
+Installing TinyTalk.
+--------------------
+
+  This is described in the separate README file which you should have
+received with this file.  If you have not received it, you can FTP a
+copy from derby.cs.wisc.edu (128.105.2.162).  It is in the directory
+~ftp/pub/tinytalk.
+
+Starting Tinytalk.
+------------------
+
+  Before using TinyTalk for the first time, you may want to create a
+configuration file (described below).  TinyTalk will run without one,
+but automatic logins and world recognition will not be available.  If
+you do not have a configuration file, a host name and port number must
+be specified, as with 'telnet'.  Configuration files are described in
+a later section.
+
+  The simplest way to invoke TinyTalk is simply by typing its name,
+without any arguments.  If a configuration file exists, this will read
+it and connect to the first world in the file.  To connect to that
+world without logging in, the single argument '-' should be given.
+
+	tinytalk	Connects to the default world and attempts login.
+	tinytalk -	Connects to the default world without logging in.
+
+  To connect to an alternate world which is in the configuration file,
+the name of that world may be given as an argument.  A leading '-'
+indicates that auto-login should be disabled.
+
+	tinytalk TinyHELL	Connects to the world TinyHELL.
+	tinytalk -TinyHELL	Connnects to TinyHELL without logging in.
+
+  To use TinyTalk without a configuration file, or to connect to a
+world which is not in the configuration file, the host name (or
+Internet address) and port number must be given, as with 'telnet'.  If
+a default character exists in the configuration file, auto-login will
+be attempted; a leading '-' on the host suppresses this.
+
+	tinytalk 192.35.96.111 6250		Connects to TinyHELL.
+	tinytalk -uokmax.ecn.uoknor.edu 6250	Connects to TinyHELL, no login.
+
+Using TinyTalk.
+---------------
+
+  TinyTalk works almost the same as a regular telnet interface would.
+Output from TinyMUD is displayed on the screen.  To send a line to
+TinyMUD, just type the line and press return.  The most noticeable
+difference is that the line you are typing will usually not be mixed
+in with the output.  (The exception is when an input line wraps
+around, in which case any entire lines typed so far will remain on the
+screen, above output from TinyMUD.)
+
+  Commands may be given to TinyTalk by entering a line which begins
+with a slash (/).  To send a line which begins with a slash to
+TinyMUD, you must start the line with two slashes.  (For instance,
+typing '//house' would send the line '/house' to TinyMUD.  Typing only
+'/house' would cause TinyTalk to look for a 'house' command.)
+
+  When you walk through a portal to another TinyMUD, TinyTalk will try
+to automatically reconnect you to the new system.  If the world is
+defined in your configuration file (and auto-login has not been
+disabled), it will automatically connect you to your character there.
+
+  The backspace and delete keys function as usual; in addition,
+control-U or control-X will erase the entire input line.  Control-R
+will refresh the current input (which may span multiple lines).
+Control-W will erase the last word typed.  (Note: all of these
+characters may be changed, using /stty mode.)
+
+  Control-C (or the interrupt character) will exit TinyTalk (unless
+the /nointr command is used); it's recommended that the standard
+TinyMUD command QUIT be used instead, though.  On systems which
+support job control, control-Z (or whichever character has been set as
+the suspend character) will pause TinyTalk and return you to the
+shell.  When you resume TinyTalk after it has been suspended, any
+output from the server which has been received will be printed.
+
+Commands.
+---------
+
+  There are four classes of TinyTalk commands: general, logging,
+macro, and output control commands.  The general commands are:
+
+  /quit		    Exits from TinyTalk.
+
+  /help		    Prints a short summary of TinyTalk commands.
+  /help2	    Prints another short summary.
+
+  /wrap [column]    Turns on word wrap mode, optionally setting the
+		    right margin.  Word wrap mode is enabled by
+		    default, at the terminal's normal right margin
+		    (or column 80 if this is not known).
+
+  /nowrap	    Turns off word wrap mode.  The current column is
+		    remembered, and a later /wrap command without an
+		    argument will default to that column.
+
+  /login	    Enables automatic logins.  These are enabled by
+		    default.
+
+  /nologin	    Disables automatic logins.  If you dislike the
+		    automatic login feature, you can place this
+		    command in your configuration file.  Another use
+		    for it is when going through a portal to a world
+		    in which you don't have a character (or wish to
+		    connect to a character which isn't your default).
+
+  /quiet	    Turns on "quiet" mode.  In quiet mode, automatic
+		    logins don't print the prompts from the server
+		    (for instance, "Welcome To TinyMUD"..."Use WHO").
+		    If you like this option, you probably want to put
+		    this command in your configuration file.  This has
+		    no effect if automatic logins are disabled.
+
+  /noquiet	    Turns off quiet mode.  Automatic logins will show
+		    the entire server message.
+
+  /intr		    Enables interrupt mode; ^C will exit TinyTalk.
+		    This is enabled by default.
+
+  /nointr	    Disables interrupt mode; ^C will be ignored.
+
+  /stty		    Causes TinyTalk to use the current terminal
+		    configuration for line editing characters.
+
+  /nostty	    Causes TinyTalk to use its default line editing
+		    characters.  This is the default.
+
+  /recall	    Recalls the last (non-empty) line typed.  This is a
+		    very limited form of command recall, useful mainly
+		    when working with an unreliable connection.
+
+  /listworlds	    Lists the worlds defined in your configuration file.
+
+  /world [name]	    Switches the connection to an alternate world.  If
+		    no world is given, connects to the default world.
+		    (Note that this breaks the connection with the old
+		    world; TinyTalk only maintains one connection at a
+		    time.)
+
+Logging commands control whether a TinyTalk session is saved into a
+file.  If you are using a terminal emulation program which does
+logging, you may not need these commands.
+
+  /log [filename]   Enables logging.  All output from the server will
+		    be logged into the specified file.  If no file has
+		    been specified, "~/tiny.log" will be used.  (Once a
+		    filename has been set, future /log commands during
+		    the same session will remember that filename.)
+
+  /nolog	    Disables logging.  The file is closed, and no
+		    output will be sent to it.  This is the default.
+
+  /logme	    Enables input logging.  Everything typed at the
+		    keyboard (including commands and TinyMUD input)
+		    will be logged, if logging is enabled.
+
+  /nologme	    Disables input logging.  Only output from the
+		    server will be logged.  This is the default.
+
+Macro commands allow macros to be defined.  Macros are discussed in
+more detail in the next section.
+
+  /def name = body  Defines the macro 'name'.  'Name' must not be a
+		    current macro.  Names are not case-sensitive, and
+		    any names which are the same as a TinyTalk command
+		    name will not be usable.
+
+  /undef name	    Undefines the macro 'name', allowing it to be
+		    redefined.
+
+  /listdef [full]   Lists the current macro definitions.  By default,
+		    this only lists their names.  If the keyword
+		    'full' is given, both names and bodies will be
+		    listed.
+
+  /savedef [file]   Saves all current macro definitions into a file.
+		    If no filename is given, "tiny.macros" will be
+		    used.  Warning: this will overwrite any existing
+		    file by the name; use it with caution.
+
+  /loaddef [file]   Loads macro definitions from a file.  The file
+		    may have been created with /savedef, or may be
+		    simply a list of /def commands (possibly with
+		    comments, lines starting a semicolon, interspersed).
+
+Output control commands.
+------------------------
+
+  These commands control special processing of messages from TinyMUD.
+
+  /beep [count]	    When /beep is enabled, page messages ("You sense that")
+		    are signaled with one more beeps.  The default is 3.
+
+  /nobeep	    This disables /beep; pages are not signaled.
+
+  /hilite [mode]    This enables hiliting of some output message.  Mode
+		    may be 'page', to hilite pages; 'whisper', to hilite
+		    whispers to you; or the name of a person, in which
+		    case all their actions will be hilited.  If no mode
+		    is specified, person-hiliting is enabled (though
+		    only previously added people will be hilited).
+
+  /nohilite [mode]  This reverses /hilite.  It can be used to disable
+		    hiliting of pages or whispers, or to remove a person
+		    from the list of hilited people.  If no mode is
+		    specified, person-hiliting is disabled; however,
+		    the list of hilited people remains intact.
+
+  /listhilite	    Lists persons being hilited, and indicates whether
+		    page and whisper hiliting is enabled.
+
+  /loadhilite [f]   Retrieves a list of characters to hilite from a file.
+		    The default name is '~/tiny.hilite'.
+
+  /savehilite [f]   Saves a list of characters to hilite in a file.  The
+		    default name is '~/tiny.hilite'.
+
+  /gag [person]	    This command suppresses output from a character.
+		    It may be useful for ignoring robots, for example.
+		    Arrival, departure, and kill messages are never
+		    suppressed.  With no arguments, gagging is enabled.
+
+  /nogag [person]   This command removes a character from the "gag list".
+		    With no arguments, gagging is disabled, but the list
+		    of gagged characters is retained.
+
+  /loadgag [f]      Retrieves a list of characters to "gag" from a file.
+		    The default name is '~/tiny.gag'.
+
+  /savegag [f]      Saves a list of characters to "gag" in a file.  The
+		    default name is '~/tiny.gag'.
+
+  /whisper	    Lets whispers be shown, on systems which support
+		    "noisy whisper".
+
+  /nowhisper	    Prevents whispers to others from being shown, in
+		    effect simulating "quiet whisper".  This is not
+		    infallible, and may prevent some messages which
+		    are not actually true whispers from being shown,
+		    if they appear to be whispers.
+
+Macros.
+-------
+
+  TinyTalk macros, while simple, are powerful.  Macros can range in
+complexity from simply moving between rooms to creating a private note
+to someone.
+
+  The simplest type of macro has no arguments.  It is defined with the
+/def command.  This macro can be invoked simply by using its name as a
+command.  For instance, entering the line
+
+	/def pizza = "I like pizza!
+
+will define a macro named 'pizza', which will send the string ' "I like
+pizza! ' to TinyMUD when it is invoked.  Typing
+
+	/pizza
+
+will cause your character to say "I like pizza!", just as though you
+had typed ' "I like pizza! ' yourself.
+
+  The special sequences %\ and %; will cause an end-of-line to be
+inserted within the macro, just as though you had typed a return.  If
+you changed your mind and wanted your character to say "I like pizza!"
+and then smile, you could remove the current pizza macro and define a
+new one:
+
+	/undef pizza
+	/def pizza = "I like pizza!%;:smiles.
+
+  Now, typing the command '/pizza' will result in TinyMUD receiving
+the following two commands.
+
+	"I like pizza!
+	:smiles.
+
+  If you want to use the percent sign (%) in a macro and have it sent
+to TinyMUD (for instance, "I like pizza 100% better than spinach"),
+you must use two percent signs.  Only one will be sent through.
+
+	/def better = "I like pizza 100%% better than spinach.
+
+  Macros may take "arguments"; that is, they may do different things
+depending on exactly what command is used to start them.  For
+instance, you may like pizza better than lots of foods, but not want
+to define a macro for every food.  You could use the following macro.
+
+	/def better = "I like pizza 100%% better than %1.
+
+  The special sequence '%1' will cause the first word after '/better'
+to be inserted there.  For instance, typing:
+
+	/better artichokes
+
+will cause TinyMUD to receive
+
+	"I like pizza 100% better than artichokes.
+
+  Up to four arguments can be used; they are numbered one through
+four.  A special case is %*, which causes the entire command line
+following the name of the macro to be inserted.  For instance, if you
+wanted to always start your character's description with the same
+string, you could define a macro:
+
+	/def pickle = @desc me = You see a pickle. %*
+
+If you then typed
+
+	/pickle You decide that it's probably dill.
+
+TinyMUD would receive
+
+	@desc me = You see a pickle. You decide that it's probably dill.
+
+  Arguments cannot have spaces in them, except for the special case of
+%*.  This restriction may be changed in a later version of TinyTalk.
+
+The configuration file.
+-----------------------
+
+  The configuration file is used to define worlds, and to set TinyTalk
+options when it starts (for instance, to define some initial macros).
+If the environment variable TINYTALK is defined, TinyTalk will look at
+the file named there for its configuration; otherwise, it reads a
+default configuration file named '.tinytalk' in the user's home
+directory (~/.tinytalk).
+
+  WARNING: You should make sure that your ~/.tinytalk file is
+protected against access by other users, by using the chmod command.
+If you don't do this, other users can find out your character names
+and passwords.
+
+  A configuration file has two sections.  The first defines the worlds
+(and characters) which TinyTalk knows about.  The second section
+consists of TinyTalk commands, which will be executed when TinyTalk
+starts up.  The sections are separated by a blank line.
+
+  The first line of the world definition section is used as a default
+world (if TinyTalk is invoked with no arguments).  This should be the
+world you enter the most, usually.
+
+  Each line of the world definition section contains five sections
+(except for the default--see below).  This defines a world, a
+character, and an address for the world.  An example would be:
+
+	TinyMUD MyCharacter MyPassword daisy.learning.cs.cs.cmu 4201
+
+  This line (which, if used in a configuration file, should not have
+any leading spaces) would define the world TinyMUD.  It would use the
+password MyPassword to automatically log into MyCharacter.  It would
+use the hostname daisy.learning.cs.cmu.edu, and port 4201.
+
+  A line with the world name "default" (and no host address or port)
+is special.  It defines a character and password to be used for all
+worlds which are not otherwise defined in the configuration file.  If
+you define all the worlds you normally visit in the configuration
+file, this is not very useful; however, it may allow new worlds to be
+accessed through portals more easily.
+
+  After the world definition section, any TinyTalk commands may be
+entered.  These may include setting quiet modes, a wrap column, or
+defining macros.
+
+  An example configuration file, with comments, follows.  It really
+isn't as complicated as the above makes it sound!
+
+--------------------
+
+;
+; This is an example TinyTalk configuration file.  It can be copied to
+; ~/.tinytalk and modified to suit your needs and wishes.
+;
+TinyMUD YourName YourPass daisy.learning.cs.cmu.edu 4201
+TinyHELL YourName YourPass 192.35.96.111 6250
+
+;
+; The preceding blank line terminates the list of worlds.
+; Any legal commands can go in this section.
+;
+/quiet
+/log
+/hilite page
+/hilite whisper
+;
+; Here are a few example macros.  (These lines are long, because
+; macros must be defined on a single line.)
+;
+; Create a note and lock it to somebody.  Invoked as /makenote (whoever).
+;
+/def makenote = @create Note for %1%\@lock Note for %1 = *%1%\@osucc Note for %1 = reads the note%\@fail Note for %1 = You can't read the note.%\@ofail Note for %1 = tries to read a note, but can't.%\@desc Note for %1 = A private note for %1.
+;
+; Take an existing note and lock it to somebody. Invoked as /usenote (whoever).
+; Assumes you are carrying an object named "Note for (whoever)".
+;
+/def usenote = @lock Note for %1 = *%1%\@osucc Note for %1 = reads the note%\@fail Note for %1 = You can't read the note.%\@ofail Note for %1 = tries to read a note, but can't.%\@desc Note for %1 = A private note for %1.
+;
+; Macros to move around are useful.  This one is specific to my configuration;
+; it moves from my home to the rec room.
+;
+/def rec = out%\s%\s%\s%\rec%\

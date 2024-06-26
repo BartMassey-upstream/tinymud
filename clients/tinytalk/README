@@ -1,0 +1,23 @@
+How to install TinyTalk.
+------------------------
+
+  TinyTalk should run on any BSD 4.2 or 4.3-derived system.  It should
+compile without modifications on all of these systems.  To build
+TinyTalk, just type 'make' in the tinytalk directory.
+
+  Some systems may not have the termcap library available, or may have
+a buggy one.  On these systems, you must edit the Makefile first.
+Remove the '-DTERMCAP' and '-ltermcap' from the CFLAGS and LIBRARIES
+lines, respectively.
+
+  If all goes well, typing 'make' will leave the executable in the
+file 'tinytalk'.  If you have very limited disk space, typing 'strip
+tinytalk' afterward will remove the symbol table, freeing up some
+space.
+
+  On HP-UX 7.0 systems, edit the Makefile to add -DHPUX to the CFLAGS
+line, then build as usual.
+
+  On System V systems, edit the Makefile to add -DSYSVTTY to the
+CFLAGS line, then build as usual.  You may also need to remove the
+-DTERMCAP line.

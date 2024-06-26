@@ -1,0 +1,23 @@
+   File Name		Archive #	Description
+-----------------------------------------------------------
+ MANIFEST                   1	This shipping list
+ README                     1	
+ tint_shar.dcl              1	
+ tinymud.el                 2	
+ tinytalk                   1	
+ tinytalk/CHANGES           3	
+ tinytalk/Makefile          3	
+ tinytalk/README            3	
+ tinytalk/command.c         2	
+ tinytalk/config.c          3	
+ tinytalk/fred.c            2	
+ tinytalk/gag.c             3	
+ tinytalk/keyboard.c        1	
+ tinytalk/log.c             3	
+ tinytalk/macro.c           3	
+ tinytalk/special.c         3	
+ tinytalk/stuff.c           3	
+ tinytalk/tinytalk.doc      2	
+ tinytalk/tl.h              1	
+ tinytalk/util.c            3	
+ tinytalk/wrap.c            3	

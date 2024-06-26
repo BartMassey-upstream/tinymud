@@ -1,0 +1,48 @@
+Changes since TinyTalk 1.0.
+---------------------------
+
+Version 1.1.2 release 6/25/90.
+
+  * Bug in /logme corrected.
+
+  * Bug in /recall corrected.
+
+Version 1.1.1 release 2/16/90.
+
+  * Support for HP-UX 7.0 and System V integrated.
+
+Version 1.1 final release 2/7/90.
+
+  * Portals are quieter when not in auto-login mode.
+
+  * A failed portal connection causes the connection to be ignored,
+    rather than exiting TinyTalk.
+
+  * Added a word-delete character (default ^W).
+
+  * Added a refresh character (default ^R).
+
+  * Added /QUIT, /INTR, and /NOINTR.  These allow ^C to be ignored,
+    instead of causing TinyTalk to exit, and provide a new command to
+    exit.  The default is to exit on ^C.
+
+  * Added /BEEP and /NOBEEP.  These allow pages to be indicated with
+    an audible beep.  The default is to use three beeps.
+
+  * Added /STTY and /NOSTTY.  These allow the system's terminal
+    information to be read for keyboard processing, rather than using
+    the default characters.  The default is to use the old characters.
+
+  * Added /GAG, /NOGAG, /SAVEGAG, /LOADGAG, and /LISTGAG.  These allow
+    the actions of specific characters to be ignored (useful for
+    silencing noisy robots).
+
+  * Added /HILITE, /NOHILITE, /LOADHILITE, /SAVEHILITE, and /LISTHILITE.
+    These allow specific characters to be hilited; also, whispers and
+    pages can be hilited.
+
+  * Added /WHISPER and /NOWHISPER.  /NOWHISPER simulates silent whisper.
+
+  * Added /RECALL, to retrieve the last line typed.
+
+  * Added /LISTWORLDS and /WORLD, for moving between worlds.
