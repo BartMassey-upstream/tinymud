@@ -103,7 +103,8 @@ DISTFILES= $(CFILES) config.h db.h externs.h interface.h match.h \
 	README small.db.README \
 	CHANGES Makefile copyright.h
 
-OUTFILES= netmud dump paths sanity-check extract decompress TAGS
+OUTFILES= netmud dump paths sanity-check extract decompress \
+	concentrate netmud.conc TAGS
 
 BINDIR= /clients/Islandia/bin
 LIBDIR= /clients/Islandia/lib
