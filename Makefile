@@ -7,13 +7,13 @@
 # Whatever you put in for $(CC) must be able to grok ANSI C.
 #
 
-# GCC:
-#CC=gcc
-#OPTIM= -g -W -Wreturn-type -Wunused -Wcomment -Wwrite-strings
+# GCC or Clang:
+CC=gcc
+OPTIM= -g -Wall -Werror -Wreturn-type -Wunused -Wcomment -Wwrite-strings -Wno-endif-labels
 
 # Systems with 'cc' built from GCC (IBM RT, NeXT):
-CC=cc
-OPTIM=-g
+#CC=cc
+#OPTIM=-g
 
 # Dec 3100 C compiler
 #CC=cc
@@ -151,7 +151,7 @@ decompress: $P decompress.o compress.o
 	$(CC) $(CFLAGS) -o decompress decompress.o compress.o
 
 clean:
-	-rm -f *.o a.out core gmon.out $(OUTFILES)
+	-rm -f *.o a.out core gmon.out $(OUTFILES) *~
 
 dist.tar.Z: $(DISTFILES)
 	tar cvf - $(DISTFILES) | compress -c > dist.tar.Z.NEW

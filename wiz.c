@@ -2,6 +2,7 @@
 
 /* Wizard-only commands */
 
+#include <stdlib.h>
 
 #include "db.h"
 #include "config.h"

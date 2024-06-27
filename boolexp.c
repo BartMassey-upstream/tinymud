@@ -1,5 +1,6 @@
 #include "copyright.h"
 
+#include <stdlib.h>
 #include <ctype.h>
 
 #include "db.h"
@@ -50,7 +51,7 @@ static struct boolexp *parse_boolexp_F(void)
     struct boolexp *b;
     char *p;
     char buf[BUFFER_LEN];
-    char msg[BUFFER_LEN];
+    char msg[2 * BUFFER_LEN];
 
     skip_whitespace();
     switch(*parsebuf) {

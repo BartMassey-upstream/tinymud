@@ -2,6 +2,8 @@
 
 /* Commands which involve speaking */
 
+#include <string.h>
+
 #include "db.h"
 #include "interface.h"
 #include "match.h"
@@ -47,8 +49,7 @@ void do_whisper(dbref player, const char *arg1, const char *arg2)
 #endif QUIET_WHISPER
     dbref who;
     char buf[BUFFER_LEN];
-    char *det;
-    int result;
+    const char *det;
 
     init_match(player, arg1, TYPE_PLAYER);
     match_neighbor();

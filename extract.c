@@ -1,9 +1,12 @@
 #include "copyright.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 #include <sys/param.h>
 
+#include "externs.h"
 #include "db.h"
 
 static int include_all = 0;	/* include everything unless specified */
@@ -91,7 +94,7 @@ static int isok(dbref x)
 
 	if(included[i] == db[x].owner 
 	   || (x <= safe_below || x >= safe_above)
-	   || keep_players && Typeof(x) == TYPE_PLAYER) {
+	   || (keep_players && Typeof(x) == TYPE_PLAYER)) {
 	    return not_excluded(x);
 	}
     }
@@ -310,9 +313,8 @@ static void do_write(void)
 
 int reach_lvl = 0;
 
-make_reachable (dbref x)
+void make_reachable (dbref x)
 {   dbref e, r;
-    int i;
     
     if (Typeof(x) != TYPE_ROOM || is_excluded(x)) return;
 
@@ -337,7 +339,7 @@ make_reachable (dbref x)
     reach_lvl--;
 }
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     dbref i;
     int top_in;
@@ -359,7 +361,7 @@ void main(int argc, char **argv)
     /* now parse args */
     arg0 = *argv;
     for (argv++, argc--; argc > 0; argv++, argc--) {
-	if (isdigit (**argv) || **argv == '-' && isdigit ((*argv)[1])) {
+	if (isdigit (**argv) || (**argv == '-' && isdigit ((*argv)[1]))) {
 	    i = atol(*argv);
 	} else if (**argv == '+' && isdigit ((*argv)[1])) {
 	    i = atol(*argv+1);
@@ -446,5 +448,5 @@ void main(int argc, char **argv)
     do_write();
     fputs("Done.\n", stderr);
 
-    exit(0);
+    return 0;
 }

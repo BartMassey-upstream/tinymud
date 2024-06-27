@@ -1,7 +1,9 @@
 #include "copyright.h"
 
+#include <stdlib.h>
 #include <stdio.h>
 
+#include "externs.h"
 #include "db.h"
 #include "config.h"
 
@@ -25,7 +27,7 @@ void check_exits(dbref i)
 	db[exit].flags = 4;	/* nonexistent type */
 
 	if(count-- < 0) {
-	    printf("%d has looping exits\n");
+	    printf("room %d has looping exits\n", i);
 	    break;
 	}
     }
@@ -50,7 +52,7 @@ void check_contents(dbref i)
 	    printf("%d in %d but location is %d\n", thing, i, loc);
 	}
 	if(count-- < 0) {
-	    printf("%d has looping contents\n");
+	    printf("object %d has looping contents\n", i);
 	    break;
 	}
     }
@@ -103,7 +105,7 @@ void check_pennies(dbref i)
     }
 }
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     dbref i;
 
@@ -176,5 +178,5 @@ void main(int argc, char **argv)
 	}
     }
 	    
-    exit(0);
+    return 0;
 }

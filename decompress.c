@@ -6,7 +6,7 @@ int main()
 {
     char buf[16384];
 
-    while(gets(buf)) {
+    while(fgets(buf, sizeof buf, stdin)) {
 	puts(uncompress(buf));
     }
     return 0;

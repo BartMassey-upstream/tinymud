@@ -1,8 +1,11 @@
 #include "copyright.h"
 
 /* Routines for parsing arguments */
+#include <stdlib.h>
 #include <ctype.h>
 
+#include "externs.h"
+#include "interface.h"
 #include "db.h"
 #include "config.h"
 #include "match.h"

@@ -2,6 +2,7 @@
 
 /* commands which set parameters */
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 
 #include "db.h"
@@ -390,8 +391,8 @@ void do_set(dbref player, const char *name, const char *flag)
 #ifdef RESTRICTED_BUILDING
 	   || f == BUILDER
 #endif /* RESTRICTED_BUILDING */
-	   || f == DARK &&
-	   (Typeof(thing) != TYPE_ROOM && Typeof(thing) != TYPE_THING))) {
+	   || (f == DARK &&
+               (Typeof(thing) != TYPE_ROOM && Typeof(thing) != TYPE_THING)))) {
 	notify(player, "Permission denied.");
 	return;
     }
@@ -481,7 +482,7 @@ void do_set(dbref player, const char *name, const char *flag)
 
 void do_recycle(dbref player, const char *name)
 {
-    dbref thing, recip, i;
+    dbref thing, recip;
     char buf[BUFFER_LEN];
 
     if (!name || !*name) {

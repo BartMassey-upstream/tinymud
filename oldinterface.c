@@ -1,6 +1,9 @@
 #include "copyright.h"
 
+#include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/file.h>
 #include <time.h>
@@ -15,6 +18,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+#include "externs.h"
 #include "db.h"
 #include "interface.h"
 #include "config.h"
@@ -102,7 +106,7 @@ int sigshutdown (int, int, struct sigcontext *);
 int logsynch (int, int, struct sigcontext *);
 #endif DETACH
 
-char *logfile = LOG_FILE;
+const char * logfile = LOG_FILE;
 
 #define MALLOC(result, type, number) do {			\
 	if (!((result) = (type *) malloc ((number) * sizeof (type))))	\
@@ -112,7 +116,7 @@ char *logfile = LOG_FILE;
 #define FREE(x) (free((void *) x))
 
 #ifndef BOOLEXP_DEBUGGING
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     if (argc < 3) {
 	fprintf(stderr, "Usage: %s infile dumpfile [port [logfile]]\n", *argv);
@@ -131,7 +135,7 @@ void main(int argc, char **argv)
     shovechars (argc >= 4 ? atoi (argv[3]) : TINYPORT);
     close_sockets ();
     dump_database ();
-    exit (0);
+    return 0;
 }
 #endif /*BOOLEXP_DEBUGGING*/
 
@@ -343,7 +347,7 @@ struct descriptor_data *new_connection(int sock)
 {
     int newsock;
     struct sockaddr_in addr;
-    int addr_len;
+    unsigned addr_len;
 
     addr_len = sizeof (addr);
     newsock = accept (sock, (struct sockaddr *) & addr, &addr_len);
@@ -558,7 +562,7 @@ int process_output(struct descriptor_data *d)
     struct text_block **qp, *cur;
     int cnt;
 
-    for (qp = &d->output.head; cur = *qp;) {
+    for (qp = &d->output.head; (cur = *qp);) {
 	cnt = write (d->descriptor, cur -> start, cur -> nchars);
 	if (cnt < 0) {
 	    if (errno == EWOULDBLOCK)
@@ -965,7 +969,7 @@ void dump_users(struct descriptor_data *e, char *user)
 			    " %s", d->hostname);
 	    } else {
 		sprintf(buf,
-			"%s idle %d seconds",
+			"%s idle %ld seconds",
 			db[d->player].name,
 			now - d->last_time);
 		if (wizard) 
@@ -1042,7 +1046,6 @@ int do_connect_msg(struct descriptor_data * d, const char *filename)
 {
   FILE           *f;
   char            buf[BUFFER_LEN];
-  char           *p;
 
   if ((f = fopen(filename, "r")) == NULL)
   {

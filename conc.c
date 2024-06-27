@@ -2,20 +2,29 @@
 /* Revision 2.0 */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <stdarg.h>
+#include <unistd.h>
 #include <signal.h>
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <sys/time.h>
 #include <sys/errno.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include "config.h"
 
-void            queue_message(int port, char *data, int len);
-void            writelog(const char *fmt,...);
+static void            setup(void);
+static void            connect_mud(void);
+static void            queue_message(int port, char *data, int len);
+static void            writelog(const char *fmt,...);
+static void            mainloop(void);
+static void            panic(void);
+static void            disconnect(int user);
 
 #define BUFLEN 65536
 #define CONC_MESSAGE "[ Connected to the TinyMUD port concentrator ]\n"
@@ -47,10 +56,7 @@ int             port = TINYPORT;
 int             intport = INTERNAL_PORT;
 int             clvl = 1;
 
-main(argc, argv)
-  int             argc;
-  char           *argv[];
-{
+int main(int argc, char **argv) {
   int             l;
 
   if (argc > 1)
@@ -67,9 +73,10 @@ main(argc, argv)
   connect_mud();		       /* Connect to interface.c */
   setup();			       /* Setup listen port */
   mainloop();			       /* main loop */
+  return 0;
 }
 
-connect_mud()
+static void connect_mud(void)
 {
   int             temp;
   struct sockaddr_in sin;
@@ -116,7 +123,7 @@ connect_mud()
 #endif
 }
 
-setup()
+static void setup(void)
 {
   int             temp;
   struct sockaddr_in sin;
@@ -147,25 +154,23 @@ setup()
   }
 }
 
-mainloop()
+void mainloop(void)
 {
-  int             found, newsock, lastsock, len, loop;
-  int             accepting, current = 0;
+  int             found, newsock, lastsock, loop;
+  socklen_t       len;
+  int             accepting;
   int             temp;
   struct timeval  tv;
   struct sockaddr_in sin;
   struct hostent *hent;
   fd_set          in, out;
   char           *data;
-  char           *buf, header[4];
   struct conc_list *cptr;
   struct message *tmsg;
   short           templen;
   char           *mainbuf, *outbuf;
   int             mainlen, outlen;
   int             command;
-  int             hlen;
-  char           *hostnm;
 
   /* Allocate huge buffer */
   data = (char *)malloc(65536);
@@ -191,7 +196,7 @@ mainloop()
   }
 
   /*
-   * Accept connections flag ON accepting = 1; /* lastsock for select() 
+   * Accept connections flag ON accepting = 1; lastsock for select() 
    */
   lastsock = sock + 1;
   /* mud_sock has already been established */
@@ -210,7 +215,7 @@ mainloop()
       sprintf(pstr, "%d", port);
       sprintf(istr, "%d", intport);
       sprintf(cstr, "%d", clvl + 1);
-      execlp("concentrate", "conc", pstr, istr, cstr, 0);
+      execlp("concentrate", "conc", pstr, istr, cstr, (char *) 0);
       writelog("CONC %d:ACK!!!!!! exec failed! Exiting...\n", clvl);
       exit(1);
       /* Gee...now what? Should I try again? */
@@ -278,7 +283,7 @@ mainloop()
       {
 	perror("keepalive setsockopt");
       }
-      queue_message(newsock, CONC_MESSAGE, sizeof(CONC_MESSAGE) - 1);
+      queue_message(newsock, (char *) CONC_MESSAGE, sizeof(CONC_MESSAGE) - 1);
       /* build control code for connect */
       data[0] = 0;
       data[1] = 1;		       /* connect */
@@ -289,7 +294,7 @@ mainloop()
       if (hent)
 	strcpy(data + 7, hent->h_name);
       else
-	strcpy(data + 7, inet_ntoa(sin.sin_addr.s_addr));
+	strcpy(data + 7, inet_ntoa(sin.sin_addr));
       queue_message(mud_sock, data, 7 + strlen(data + 7));
 #ifdef DEBUG
       writelog("CONC %d: USER CONNECT: sock %d, host %s\n", clvl,
@@ -361,11 +366,15 @@ mainloop()
 	command = *(cptr->first->data);
 	switch (command)
 	{
-	case 2:		       /* disconnect */
-	  if (clist[*(cptr->first->data + 1)].status)
-	    clist[*(cptr->first->data + 1)].status = 2;
-	  else
-	    writelog("CONC %d: Recieved dissconnect for unknown user\n", clvl);
+	case 2:	       /* disconnect */
+          {
+            unsigned byte = *(cptr->first->data + 1);
+            if (clist[byte].status) {
+              clist[byte].status = 2;
+            } else {
+              writelog("CONC %d: Recieved disconnect for unknown user\n", clvl);
+            }
+          }
 	  break;
 	default:
 	  writelog("CONC %d: Recieved unknown command %d\n", clvl, command);
@@ -442,8 +451,7 @@ mainloop()
 }
 
 /* Properly disconnect a user */
-disconnect(user)
-  int             user;
+static void disconnect(int user)
 {
   char            header[4];
 
@@ -461,7 +469,7 @@ disconnect(user)
 #endif
 }
 
-void            queue_message(int port, char *data, int len)
+static void queue_message(int port, char *data, int len)
 {
   struct message *ptr;
 
@@ -478,7 +486,7 @@ void            queue_message(int port, char *data, int len)
 }
 
 /* Kill off all connections quickly */
-panic()
+static void panic(void)
 {
   int             loop;
 
@@ -495,11 +503,9 @@ panic()
 }
 
 /* Modified to send stuff to the main server for logging */
-void            writelog(const char *fmt,...)
+static void writelog(const char *fmt,...)
 {
   va_list         list;
-  struct tm      *tm;
-  long            t;
   char            buffer[2048];
 
   va_start(list, fmt);

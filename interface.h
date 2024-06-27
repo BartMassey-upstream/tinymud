@@ -21,3 +21,4 @@ extern void do_look_around(dbref player);
 extern int init_game(const char *infile, const char *outfile);
 extern void dump_database(void);
 extern void panic(const char *);
+extern void boot_off(dbref player);

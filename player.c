@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "copyright.h"
 
 #include "db.h"

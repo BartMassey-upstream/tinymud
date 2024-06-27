@@ -5,9 +5,14 @@
 /* modified interface.c to support LOTS of people, using a concentrator */
 /* May 1990, Robert Hood */
 
-/* #define CHECKC	/* consistency checking */
+/* consistency checking */
+/* #define CHECKC */
 
+#include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/file.h>
@@ -23,6 +28,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+#include "externs.h"
 #include "config.h"
 #include "db.h"
 #include "interface.h"
@@ -60,7 +66,7 @@ struct descriptor_data
   long            last_time;
   int             quota;
   struct sockaddr_in address;	       /* added 3/6/90 SCG */
-  char           *hostname;	       /* 5/18/90 - Fuzzy */
+  char            *hostname;	       /* 5/18/90 - Fuzzy */
   struct descriptor_data *next;
 };
 
@@ -100,7 +106,7 @@ int             process_input(struct descriptor_data * d, char *buf, int got);
 void            process_commands();
 void            dump_users(struct descriptor_data * e, char *user);
 void            free_text_block(struct text_block * t);
-void            main(int argc, char **argv);
+int             main(int argc, char **argv);
 void            set_signals();
 int             msec_diff(struct timeval now, struct timeval then);
 void            clearstrings(struct descriptor_data * d);
@@ -133,7 +139,7 @@ void            announce_disconnect(dbref);
 int             sigshutdown(int, int, struct sigcontext *);
 
 int             logsynch();
-char           *logfile = LOG_FILE;
+const char      *logfile = LOG_FILE;
 
 int             debug;
 void            chg_userid();
@@ -144,7 +150,7 @@ static const char *connect_fail = "Either that player does not exist, or has a d
 static const char *create_fail = "Either there is already a player with that name, or that name is illegal.\n";
 #endif				       /* REGISTRATION */
 static const char *flushed_message = "<Output Flushed>\n";
-static const char *shutdown_message = "Going down - Bye\n";
+/* static const char *shutdown_message = "Going down - Bye\n"; */
 
 int             sock;
 int             shutdown_flag = 0;
@@ -153,7 +159,7 @@ int             port = TINYPORT;
 int             intport = INTERNAL_PORT;
 
 
-start_port()
+static void start_port(void)
 {
   int             temp;
   struct sockaddr_in sin;
@@ -410,13 +416,13 @@ void dump_users(struct descriptor_data * e, char *user)
 		    time_format_2(now - d->last_time));
 
 	    if (wizard)
-	      sprintf(buf, "%s  %s", buf, d->hostname);
+	      sprintf(buf + strlen(buf), "  %s", d->hostname);
 	  } else
 	  {
-	    sprintf(buf, "%s idle %d seconds",
+	    sprintf(buf, "%s idle %ld seconds",
 		    db[d->player].name, now - d->last_time);
 	    if (wizard)
-	      sprintf(buf, "%s from host %s", buf, d->hostname);
+	      sprintf(buf + strlen(buf), " from host %s", d->hostname);
 	  }
 	  strcat(buf, "\n");
 	  queue_string(e, buf);
@@ -441,13 +447,13 @@ void dump_users(struct descriptor_data * e, char *user)
 		    time_format_2(now - d->last_time));
 
 	    if (wizard)
-	      sprintf(buf, "%s  %s", buf, d->hostname);
+	      sprintf(buf + strlen(buf), "  %s", d->hostname);
 	  } else
 	  {
-	    sprintf(buf, "%s idle %d seconds",
+	    sprintf(buf, "%s idle %ld seconds",
 		    db[d->player].name, now - d->last_time);
 	    if (wizard)
-	      sprintf(buf, "%s from host %s", buf, d->hostname);
+              sprintf(buf + strlen(buf), " from host %s", d->hostname);
 	  }
 	  strcat(buf, "\n");
 	  queue_string(e, buf);
@@ -474,7 +480,7 @@ void free_text_block(struct text_block * t)
 }
 
 #ifndef BOOLEXP_DEBUGGING
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
   int             pid;
 
@@ -512,14 +518,14 @@ void main(int argc, char **argv)
     sprintf(pstr, "%d", port);
     sprintf(istr, "%d", intport);
     sprintf(clvl, "%d", 1);
-    execl("concentrate", "conc", pstr, istr, clvl, 0);
+    execl("concentrate", "conc", pstr, istr, clvl, (char *) 0);
   }
   set_signals();
-  start_port(port);
+  start_port();
   main_loop();
   close_sockets();
   dump_database();
-  exit(0);
+  return 0;
 }
 
 #endif
@@ -639,7 +645,7 @@ struct descriptor_data *
   d->last_time = 0;
   d->address = *a;		       /* This will be the address of the
 				        * concentrator */
-  d->hostname = "";		       /* This will be set during connect */
+  d->hostname = (char *) "";	       /* This will be set during connect */
 
   welcome_user(d);
   return d;
@@ -967,9 +973,7 @@ void
 void
                 close_sockets(void)
 {
-  struct descriptor_data *d, *dnext;
   struct conc_list *c;
-  char            header[4];
 
   for (c = firstc; c; c = c->next)
   {
@@ -1127,17 +1131,16 @@ void
 void            main_loop()
 {
   struct message *ptr;
-  int             found, newsock, lastsock, len, loop;
+  int             found, newsock, lastsock;
+  socklen_t       len;
   int             accepting;
   struct timeval  tv;
   struct sockaddr_in sin;
   fd_set          in, out;
-  char            data[1025], *p1, *p2, buffer[1025], header[4];
   struct conc_list *c, *tempc, *nextc, *lastc;
-  struct descriptor_data *d, *tempd, *nextd;
+  struct descriptor_data *d, *tempd;
   struct timeval  last_slice, current_time;
   struct timeval  next_slice;
-  struct timeval  slice_timeout;
   short           templen;
 
   accepting = 1;
@@ -1153,7 +1156,7 @@ void            main_loop()
       break;
 
     next_slice = msec_add(last_slice, COMMAND_TIME_MSEC);
-    slice_timeout = timeval_sub(next_slice, current_time);
+    timeval_sub(next_slice, current_time);
 
     FD_ZERO(&in);
     FD_ZERO(&out);
@@ -1227,12 +1230,11 @@ void            main_loop()
 #endif
       if ((FD_ISSET(c->sock, &in)) && (c->ilen < BUFSIZE))
       {
-	int             i;
 	len = recv(c->sock, c->incoming + c->ilen,
 		   BUFSIZE - c->ilen, 0);
 	if (len == 0)
 	{
-	  struct message *mptr, *tempm;
+	  struct message *mptr;
 	  writelog("CONCENTRATOR DISCONNECT: %d\n", c->sock);
 	  close(c->sock);
 	  d = c->firstd;
@@ -1252,7 +1254,6 @@ void            main_loop()
 	  mptr = c->first;
 	  while (mptr)
 	  {
-	    tempm = mptr;
 	    mptr = mptr->next;
 	    FREE(mptr->data);
 	    FREE(mptr);
@@ -1273,7 +1274,7 @@ void            main_loop()
 	    bcopy(c->incoming, &templen, 2);
 #ifdef CHECKC
 	    if (templen < 1)
-	      writelog("CONSISTENCY CHECK: Message recived with lenght < 1\n");
+	      writelog("CONSISTENCY CHECK: Message recived with length < 1\n");
 #endif
 	    if (c->ilen >= (templen + 2))
 	    {
@@ -1292,9 +1293,10 @@ void            main_loop()
 		  d->num = *(c->incoming + 4);
 		  MALLOC(d->hostname, char,
 			 templen - 5);
-		  bcopy(c->incoming + 9, d->hostname,
+		  bcopy(c->incoming + 9, (void *) d->hostname,
 			templen - 6);
-		  *(d->hostname + templen - 7) = 0;
+                  assert(templen >= 7);
+		  *(d->hostname + templen - 7) = '\0';
 #ifdef DEBUG
 		  writelog("USER CONNECT %d,%d from host %s\n", c->sock, d->num, d->hostname);
 #endif
@@ -1486,7 +1488,6 @@ int do_connect_msg(struct descriptor_data * d, const char *filename)
 {
   FILE           *f;
   char            buf[BUFFER_LEN];
-  char           *p;
 
   if ((f = fopen(filename, "r")) == NULL)
   {

@@ -1,6 +1,8 @@
 #include "copyright.h"
 
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <signal.h>
@@ -211,8 +213,6 @@ void process_command(dbref player, char *command)
     char *arg2;
     char *q;			/* utility */
     char *p;			/* utility */
-
-    char *index(char *, char);
 
     if(command == 0) abort();
 
