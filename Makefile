@@ -119,15 +119,12 @@ TAGS: *.c *.h
 	etags *.c *.h
 
 netmud.conc: $P interface.o $(OFILES)
-	-mv -f netmud.conc netmud.conc~
 	$(CC) $(CFLAGS) -o netmud.conc interface.o $(OFILES)
 
 netmud: $P oldinterface.o $(OFILES)
-	-mv -f netmud netmud~
 	$(CC) $(CFLAGS) -o netmud oldinterface.o $(OFILES)
 
 concentrate: $P conc.c config.h
-	-mv -f concentrate concentrate~
 	$(CC) $(CFLAGS) -o concentrate conc.c
 
 dump: $P dump.o unparse.o $(DBOFILES)
@@ -151,7 +148,7 @@ decompress: $P decompress.o compress.o
 	$(CC) $(CFLAGS) -o decompress decompress.o compress.o
 
 clean:
-	-rm -f *.o a.out core gmon.out $(OUTFILES) *~
+	-rm -f *.o a.out core gmon.out $(OUTFILES)
 
 dist.tar.Z: $(DISTFILES)
 	tar cvf - $(DISTFILES) | compress -c > dist.tar.Z.NEW
