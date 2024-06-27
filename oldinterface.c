@@ -12,7 +12,7 @@
 #include <sys/ioctl.h>
 #include <sys/wait.h>
 #include <fcntl.h>
-#include <sys/errno.h>
+#include <errno.h>
 #include <ctype.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
